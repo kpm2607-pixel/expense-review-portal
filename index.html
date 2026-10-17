@@ -1,0 +1,158 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="utf-8"><title>Expense review portal</title>
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:wght@600&family=Figtree:wght@400;500;700&display=swap">
+<style>
+:root{--bg:#f1f4f3;--sf:#fff;--ink:#17201e;--mu:#5f6b68;--ln:#d9e0de;--tl:#0f6e56;--tlb:#e1f5ee;--pu:#534ab7;--pub:#eeedfe;--ok:#3b6d11;--okb:#eaf3de;--wn:#854f0b;--wnb:#faeeda;--bd:#a32d2d;--bdb:#fcebeb;--on:#fff;--ac:var(--tl);--acb:var(--tlb);box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+@media(prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#111716;--sf:#1b2321;--ink:#eef2f0;--mu:#9aa8a4;--ln:#2e3a37;--tl:#5dcaa5;--tlb:#0f3a30;--pu:#afa9ec;--pub:#2a2656;--ok:#97c459;--okb:#22330f;--wn:#ef9f27;--wnb:#3a2a0c;--bd:#f09595;--bdb:#3d1717;--on:#0d1311}}
+:root[data-theme="dark"]{--bg:#111716;--sf:#1b2321;--ink:#eef2f0;--mu:#9aa8a4;--ln:#2e3a37;--tl:#5dcaa5;--tlb:#0f3a30;--pu:#afa9ec;--pub:#2a2656;--ok:#97c459;--okb:#22330f;--wn:#ef9f27;--wnb:#3a2a0c;--bd:#f09595;--bdb:#3d1717;--on:#0d1311}
+html{scroll-padding-top:env(safe-area-inset-top,0px)}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font:15px/1.5 Figtree,system-ui,sans-serif}
+body.emp{--ac:var(--tl);--acb:var(--tlb)}body.rev{--ac:var(--pu);--acb:var(--pub)}
+h1,h2,h3{font-family:'Bricolage Grotesque',Georgia,serif;font-weight:600;margin:0 0 6px}
+.top{display:flex;justify-content:space-between;align-items:center;gap:8px;flex-wrap:wrap;padding:12px 16px;border-bottom:1px solid var(--ln);background:var(--sf)}
+.brand{font:600 18px 'Bricolage Grotesque',Georgia,serif}
+.wrap{max-width:940px;margin:0 auto;padding:16px}.narrow{max-width:440px}
+.card{background:var(--sf);border:1px solid var(--ln);border-radius:10px;padding:16px;margin-bottom:12px}
+.g2{display:grid;grid-template-columns:repeat(auto-fit,minmax(230px,1fr));gap:0 14px}
+.g3{display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:8px;margin-bottom:8px}
+label{display:block;font-size:13px;color:var(--mu);margin:10px 0 4px}
+label.ck{display:inline-flex;gap:6px;margin:4px 12px 0 0;font-size:14px;color:var(--ink)}
+input,select,textarea{width:100%;padding:9px 10px;border:1px solid var(--ln);border-radius:8px;background:var(--bg);color:var(--ink);font:inherit}
+input[type=checkbox]{width:auto}
+input:focus-visible,select:focus-visible,textarea:focus-visible,button:focus-visible{outline:2px solid var(--ac);outline-offset:1px}
+.btn{border:1px solid var(--ln);background:var(--sf);color:var(--ink);padding:8px 14px;border-radius:8px;font:inherit;cursor:pointer}
+.btn.p{background:var(--ac);color:var(--on);border-color:var(--ac);font-weight:500}
+.tabs{display:flex;gap:6px;margin:4px 0 14px;flex-wrap:wrap}
+.tab{border:1px solid var(--ln);background:var(--sf);color:var(--ink);padding:7px 14px;border-radius:99px;font:inherit;cursor:pointer}
+.tab.on{background:var(--acb);color:var(--ac);border-color:var(--ac);font-weight:500}
+.chip{display:inline-block;padding:2px 9px;border-radius:99px;font-size:12px;background:var(--acb);color:var(--ac)}
+.chip.ok{background:var(--okb);color:var(--ok)}.chip.wn{background:var(--wnb);color:var(--wn)}.chip.bd{background:var(--bdb);color:var(--bd)}
+.er{color:var(--bd);font-size:13px;margin-top:6px}.mu{color:var(--mu)}.sm{font-size:13px}
+.rw{display:flex;justify-content:space-between;gap:8px;flex-wrap:wrap}
+.kv{display:flex;justify-content:space-between;gap:12px;padding:5px 0;border-bottom:1px solid var(--ln)}
+.pv{max-width:150px;border-radius:8px;margin-top:8px;display:block}
+.sc{overflow-x:auto}.tb{width:100%;border-collapse:collapse;font-size:14px}
+.tb th,.tb td{padding:8px;border-bottom:1px solid var(--ln);text-align:left;vertical-align:top}.tb th{color:var(--mu);font-weight:500}
+ul{margin:8px 0;padding-left:20px}
+.hero h1{font-size:36px;margin:24px 0 6px}.role{border-top:4px solid var(--ac)}.role h2{font-size:24px}
+.r1{--ac:var(--tl);--acb:var(--tlb)}.r2{--ac:var(--pu);--acb:var(--pub)}
+.res{border-style:dashed;border-width:2px}.res.ok{border-color:var(--ok)}.res.wn{border-color:var(--wn)}
+footer{max-width:940px;margin:8px auto 24px;padding:0 16px;font-size:13px;color:var(--mu)}
+</style></head><body>
+<header class="top"><span class="brand">Expense review portal</span><span id="tp"></span></header>
+<main id="app"></main>
+<footer>Prototype: data lives in this page only. Receipt reading and exchange rates are simulated.</footer>
+<script>
+const $=s=>document.querySelector(s),H=s=>String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+const ago=n=>{const d=new Date();d.setDate(d.getDate()-n);return d.toISOString().slice(0,10)};
+const RATE={INR:1,USD:83,EUR:90,GBP:105,AED:22.6,SGD:62},inr=n=>'₹'+Math.round(n).toLocaleString('en-IN');
+const LB={approved:'Approved',flagged:'Under review',info:'Needs info',rejected:'Rejected'},CL={approved:'ok',flagged:'wn',info:'wn',rejected:'bd'};
+const U=[{id:'E101',name:'Rahul Shah',role:'emp',pin:'482913'},{id:'E102',name:'Neha Kulkarni',role:'emp',pin:'735104'},{id:'E103',name:'Amit Patel',role:'emp',pin:'260817'},{id:'R001',name:'Anita Rao',role:'rev',pin:'619274',edit:true}];
+const P=[{v:1,from:'2026-01-01',by:'System',why:'Initial policy',caps:{'Client meal':1500,'Office meal':500,'Travel':8000,'Supplies':5000,'Phone and internet':2000,'Fuel':3000},daily:{Mumbai:6000,Delhi:5500,Other:3500},banned:['alcohol','liquor','beer','wine','whisky'],win:30,appr:10000,month:25000}];
+const HIST=[{v:1,at:'2026-01-01',by:'System',sec:'All rules',why:'Initial policy',chg:'Policy created'}],PUR=Object.keys(P[0].caps);
+const pf=d=>{let p=P[0];P.forEach(x=>{if(x.from<=d)p=x});return p},cur=()=>P.reduce((a,b)=>b.v>a.v?b:a);
+const cityOf=p=>/mumbai/i.test(p)?'Mumbai':/delhi/i.test(p)?'Delhi':'Other';
+const amt=r=>(r.cur!=='INR'?r.cur+' '+r.amt+' = ':'')+inr(r.inr),rsn=r=>r.note||r.reasons.join('; ')||'-';
+let R=[],nid=1,F={f:null,small:false},S={user:null,stage:'land',role:null,tab:'a',sub:'a',res:null},FS={};const fails={};
+function ev(r){const p=pf(r.date),re=[];let tag='';const add=(t,m)=>{re.push(m);tag=tag||t};
+if(r.purpose==='Client meal'&&!r.clients.some(c=>c.name&&c.role&&c.org))add('Missing info','Client name, designation and organisation are required for client meals');
+if(r.small)add('Messy','Image is too small to read reliably');
+const b=p.banned.filter(w=>r.items.toLowerCase().includes(w));if(b.length)add('Rule violation','Contains a non-reimbursable item: '+b.join(', '));
+const cap=p.caps[r.purpose];if(r.inr>cap)add('Rule violation','Over the '+r.purpose.toLowerCase()+' cap of '+inr(cap));
+const day=R.filter(x=>x.uid===r.uid&&x.date===r.date&&x.city===r.city&&x.status!=='rejected'&&x.id!==r.id).reduce((s,x)=>s+x.inr,0);
+if(day+r.inr>p.daily[r.city])add('Rule violation','Daily limit for '+r.city+' ('+inr(p.daily[r.city])+') exceeded');
+if((Date.now()-new Date(r.date))/864e5>p.win)add('Rule violation','Submitted after the '+p.win+'-day filing window');
+if(r.inr>p.appr)add('Needs approval','Above '+inr(p.appr)+': needs manager sign-off');
+const d=R.find(x=>x.uid===r.uid&&x.amt===r.amt&&x.cur===r.cur&&x.date===r.date&&x.place.toLowerCase()===r.place.toLowerCase()&&x.id!==r.id);
+if(d)add('Duplicate','Possible duplicate of receipt #'+d.id);
+r.reasons=re;r.tag=tag;r.ver=p.v;r.status=re.length?'flagged':'approved';r.paid=re.length?0:r.inr;r.by='System'}
+function mk(uid,purpose,place,d,amt,cur,items,cl,small){const r={id:nid++,uid,purpose,place,city:cityOf(place),date:ago(d),time:'13:00',cur,amt,inr:amt*RATE[cur],clients:cl?[{name:cl[0],role:cl[1],org:cl[2]}]:[],col:[],notes:'',items,small:!!small,file:'receipt.jpg'};ev(r);R.push(r)}
+mk('E101','Client meal','Taj Restaurant, Mumbai',3,1400,'INR','Thali',['Sandeep Rao','Procurement Manager','Tata Projects']);
+mk('E101','Travel','Cab, Mumbai',3,900,'INR','Cab fare');
+mk('E101','Client meal','Hotel Sea Rock, Mumbai',5,2200,'INR','Dinner\nWhisky');
+mk('E101','Client meal','Taj Restaurant, Mumbai',3,1400,'INR','Thali',['Sandeep Rao','Procurement Manager','Tata Projects']);
+mk('E102','Supplies','Staples, Delhi',4,4800,'INR','Printer paper');
+mk('E102','Supplies','Office Depot, Delhi',2,4900,'INR','Toner');
+mk('E102','Office meal','Cafe Delhi, Delhi',1,480,'INR','Lunch',null,true);
+mk('E103','Client meal','Burj Cafe, Dubai',2,48,'USD','Lunch',['Omar Khan','Buyer','Gulf Traders']);
+const tabs=(a,k,cb)=>`<div class="tabs">${a.map((x,i)=>{const L=String.fromCharCode(97+i);return `<button class="tab ${S[k]===L?'on':''}" onclick="S.${k}='${L}';${cb||''}draw()">${x}</button>`}).join('')}</div>`;
+const land=()=>`<div class="wrap hero"><h1>Expense review portal</h1><p class="mu">Submit receipts, get a decision in seconds, and let finance review only what needs a person.</p><div class="g2"><div class="card role r1"><h2>Employee</h2><p>Submit receipts and track every claim.</p><button class="btn p" onclick="pk('emp')">Continue</button></div><div class="card role r2"><h2>Finance reviewer</h2><p>Review claims, watch flags and manage the policy.</p><button class="btn p" onclick="pk('rev')">Continue</button></div></div></div>`;
+const pk=r=>{S.role=r;S.stage='login';draw()};
+const login=()=>`<div class="wrap narrow"><div class="card"><h2>${S.role==='emp'?'Employee':'Finance reviewer'} login</h2><label>ID</label><input id="lid" autocomplete="off"><label>PIN</label><input id="lpn" type="password" inputmode="numeric" maxlength="6"><div id="le" class="er"></div><p><button class="btn p" onclick="go()">Enter</button> <button class="btn" onclick="S.stage='land';draw()">Change role</button></p><div class="mu sm">Demo accounts: ${S.role==='emp'?'E101 / 482913, E102 / 735104, E103 / 260817':'R001 / 619274'}</div></div></div>`;
+function go(){const id=$('#lid').value.trim().toUpperCase(),pn=$('#lpn').value,f=fails[id]||(fails[id]={n:0,t:0}),e=m=>$('#le').textContent=m;
+if(Date.now()<f.t)return e('Too many attempts. Try again in '+Math.ceil((f.t-Date.now())/1e3)+' seconds');
+const u=U.find(x=>x.id===id);if(!u||u.role!==S.role||u.pin!==pn){f.n++;if(f.n>=5){f.n=0;f.t=Date.now()+30000}return e('ID or PIN incorrect')}
+f.n=0;S.user=u;S.tab='a';S.sub='a';S.res=null;draw()}
+const out=()=>{S.user=null;S.stage='land';draw()};
+const clRow=()=>'<div class="cr g3"><input placeholder="Client name"><input placeholder="Designation"><input placeholder="Organisation"></div>';
+const addCl=()=>$('#cls').insertAdjacentHTML('beforeend',clRow());
+const er=m=>{const x=$('#err');if(x)x.textContent=m};
+function conv(){const c=$('#cu').value,a=parseFloat($('#am').value);$('#cv').textContent=c!=='INR'&&a>0?'≈ '+inr(a*RATE[c])+' at sample rate ₹'+RATE[c]:''}
+function pick(el){const f=el.files[0];F={f:null,small:false};$('#pv').innerHTML='';if(!f)return;
+if(!/\.(jpe?g|png)$/i.test(f.name)||!/^image\/(jpeg|png)$/.test(f.type)){el.value='';return er('Only JPG, JPEG or PNG files are accepted')}
+if(f.size>5e6){el.value='';return er('Image must be under 5 MB')}er('');F.f=f;const u=URL.createObjectURL(f),i=new Image();
+i.onload=()=>{F.small=i.naturalWidth<400||i.naturalHeight<400;$('#pv').innerHTML='<img class="pv" src="'+u+'" alt="Receipt preview">'+(F.small?'<div class="er">Low resolution: this may be flagged as hard to read. Consider retaking the photo.</div>':'')};i.src=u}
+function sub(){const v=id=>$('#'+id).value.trim();if(!F.f)return er('Upload a receipt image first');
+const pl=v('pl'),dt=v('dt'),tm=v('tm'),am=parseFloat(v('am'));if(!pl||!dt||!tm||!(am>0))return er('Place, date, time and a valid amount are required');
+if(dt>ago(0))return er('Date cannot be in the future');const cu=v('cu');
+const cl=[...document.querySelectorAll('.cr')].map(r=>{const i=r.querySelectorAll('input');return{name:i[0].value.trim(),role:i[1].value.trim(),org:i[2].value.trim()}}).filter(c=>c.name||c.role||c.org);
+const r={id:nid++,uid:S.user.id,purpose:v('pu'),place:pl,city:cityOf(pl),date:dt,time:tm,cur:cu,amt:am,inr:am*RATE[cu],clients:cl,col:[...document.querySelectorAll('.co:checked')].map(x=>x.value),notes:v('no'),items:v('it'),small:F.small,file:F.f.name};
+ev(r);R.push(r);S.res=r;F={f:null,small:false};draw()}
+const form=()=>{const o=U.filter(u=>u.role==='emp'&&u.id!==S.user.id);return `<div class="card"><h3>Submit a receipt</h3><div id="err" class="er"></div>
+<label>Receipt image (JPG, JPEG or PNG)</label><input type="file" id="fi" accept=".jpg,.jpeg,.png,image/jpeg,image/png" onchange="pick(this)"><div id="pv"></div>
+<div class="g2"><div><label>Purpose</label><select id="pu">${PUR.map(x=>`<option>${x}</option>`).join('')}</select></div>
+<div><label>Place where money was used</label><input id="pl" placeholder="e.g. Taj Restaurant, Mumbai"></div>
+<div><label>Date</label><input type="date" id="dt" max="${ago(0)}"></div><div><label>Time</label><input type="time" id="tm"></div>
+<div><label>Currency</label><select id="cu" onchange="conv()">${Object.keys(RATE).map(x=>`<option>${x}</option>`).join('')}</select></div>
+<div><label>Amount</label><input type="number" id="am" min="0" step="0.01" oninput="conv()"><div id="cv" class="mu sm"></div></div></div>
+<label>People with me</label><div>${o.map(u=>`<label class="ck"><input type="checkbox" class="co" value="${u.id}">${u.name}</label>`).join('')}</div>
+<label>Client details</label><div id="cls"></div><button class="btn" type="button" onclick="addCl()">Add another client</button>
+<label>Items on the receipt (one per line)</label><textarea id="it" rows="2" placeholder="Stands in for AI receipt reading in this prototype"></textarea>
+<label>Notes (optional)</label><input id="no"><p><button class="btn p" onclick="sub()">Submit receipt</button></p></div>`};
+const resCard=()=>{const r=S.res;return `<div class="card res ${CL[r.status]}"><h3>${r.status==='approved'?'Approved: '+inr(r.paid)+' will be paid':'Sent for review'}</h3>${r.reasons.length?'<ul>'+r.reasons.map(x=>`<li>${H(x)}</li>`).join('')+'</ul>':'<p>Everything checks out against policy v'+r.ver+'.</p>'}<button class="btn" onclick="S.tab='b';S.sub='${r.status==='approved'?'a':'b'}';S.res=null;draw()">View in Status</button></div>`};
+function tbl(l,m){if(!l.length)return '<p class="mu">Nothing here yet.</p>';
+return `<div class="sc"><table class="tb"><tr><th>#<th>Receipt${m==='v'?'<th>Employee':''}<th>Date<th>Amount${m==='u'?'<th>Status<th>Reason':'<th>Paid<th>Status'}${l.map(r=>`<tr><td>${r.id}<td>${H(r.purpose)}<br><span class="mu">${H(r.place)}</span>${m==='v'?'<td>'+U.find(u=>u.id===r.uid).name:''}<td>${r.date}<td>${amt(r)}${m==='u'?`<td><span class="chip ${CL[r.status]}">${LB[r.status]}</span><td>${H(rsn(r))}`:`<td>${inr(r.paid)}<td><span class="chip ${r.paid<r.inr?'wn':'ok'}">${r.paid<r.inr?'Partially paid':(r.by==='System'?'Auto-approved':'Approved by reviewer')}</span>`}`).join('')}</table></div>`}
+function emp(){let b;if(S.tab==='a')b=(S.res?resCard():'')+form();else{const m=R.filter(r=>r.uid===S.user.id).reverse(),c=m.filter(r=>r.status==='approved'),u=m.filter(r=>r.status!=='approved');
+b=tabs(['Claimed ('+c.length+')','Unclaimed ('+u.length+')'],'sub')+(S.sub==='a'?tbl(c,'c'):tbl(u,'u'))}
+return `<div class="wrap">${tabs(['Receipts','Status'],'tab',"S.sub='a';")}${b}</div>`}
+const act=r=>`<div class="g2"><div><label>Reason (required)</label><input id="rs${r.id}"></div><div><label>Your PIN</label><input id="pn${r.id}" type="password" inputmode="numeric" maxlength="6"></div><div><label>Pay amount (optional)</label><input id="py${r.id}" type="number" placeholder="${Math.round(r.inr)}"></div></div><div id="ae${r.id}" class="er"></div><p><button class="btn p" onclick="dec(${r.id},'approved')">Approve</button> <button class="btn" onclick="dec(${r.id},'info')">Request info</button> <button class="btn" onclick="dec(${r.id},'rejected')">Reject</button></p>`;
+const card=r=>`<div class="card"><div class="rw"><b>#${r.id} ${H(r.purpose)}, ${H(r.place)}</b><span><span class="chip ${CL[r.status]}">${LB[r.status]}</span> <span class="chip">${r.tag||'Review'}</span></span></div><div class="mu sm">${U.find(u=>u.id===r.uid).name} on ${r.date} ${r.time}, ${amt(r)}, policy v${r.ver}</div><ul>${r.reasons.map(x=>`<li>${H(x)}</li>`).join('')}</ul>${r.status==='rejected'?'<div class="mu">Reviewer note: '+H(r.note)+'</div>':act(r)}</div>`;
+function dec(id,s){const r=R.find(x=>x.id===id),g=k=>$('#'+k+id).value.trim(),e=m=>$('#ae'+id).textContent=m;
+if(!g('rs'))return e('A reason is required');if(g('pn')!==S.user.pin)return e('PIN incorrect');
+r.status=s;r.note=g('rs');r.by=S.user.name;r.paid=s==='approved'?Math.min(r.inr,parseFloat(g('py'))||r.inr):0;draw()}
+function flg(){const since=ago(30),mon=cur().month,rows=U.filter(u=>u.role==='emp').map(u=>{const rs=R.filter(r=>r.uid===u.id&&r.date>=since),nc=rs.filter(r=>r.status!=='approved'),tot=rs.filter(r=>r.status!=='rejected').reduce((s,r)=>s+r.inr,0),re=[];
+if(nc.length>=2)re.push(nc.length+' non-compliant receipts');if(tot>mon)re.push('Crossed the monthly limit');
+if(rs.filter(r=>r.tag==='Messy').length>=2)re.push('Repeated unreadable receipts');
+if(rs.filter(r=>{const c=pf(r.date).caps[r.purpose];return r.inr>=.9*c&&r.inr<=c}).length>=2)re.push('Claims repeatedly just under a cap');
+if(rs.some(r=>r.tag==='Duplicate'))re.push('Duplicate submission');return{u,re,tot}}).filter(x=>x.re.length);
+return rows.length?rows.map(x=>`<div class="card"><div class="rw"><b>${x.u.name}</b><span class="chip ${FS[x.u.id]==='Dismissed'?'':'wn'}">${FS[x.u.id]||'Open'}</span></div><div class="mu sm">Last 30 days: ${inr(x.tot)} of ${inr(mon)}</div><ul>${x.re.map(t=>`<li>${t}</li>`).join('')}</ul><button class="btn" onclick="FS['${x.u.id}']='Reminder sent';draw()">Send reminder</button> <button class="btn" onclick="FS['${x.u.id}']='Under watch';draw()">Watch</button> <button class="btn" onclick="FS['${x.u.id}']='Dismissed';draw()">Dismiss</button></div>`).join(''):'<p class="mu">No employees are flagged.</p>'}
+const kv=(a,b)=>`<div class="kv"><span>${a}</span><b>${b}</b></div>`;
+const editor=c=>`<div class="card"><h3>Edit policy</h3><p class="mu">Publishing creates version ${c.v+1}. Earlier versions are kept.</p><div class="g2">${PUR.map((k,i)=>`<div><label>${k} cap (₹)</label><input id="c${i}" type="number" value="${c.caps[k]}"></div>`).join('')}${Object.keys(c.daily).map((k,i)=>`<div><label>Daily limit: ${k} (₹)</label><input id="d${i}" type="number" value="${c.daily[k]}"></div>`).join('')}<div><label>Filing window (days)</label><input id="wn" type="number" value="${c.win}"></div><div><label>Sign-off above (₹)</label><input id="ap" type="number" value="${c.appr}"></div><div><label>Monthly limit (₹)</label><input id="mo" type="number" value="${c.month}"></div><div><label>Not reimbursable (comma separated)</label><input id="bn" value="${H(c.banned.join(', '))}"></div></div><div class="g2"><div><label>Reason for change (required)</label><input id="why"></div><div><label>Effective from</label><input id="ef" type="date" value="${ago(0)}"></div><div><label>Your PIN</label><input id="pnp" type="password" inputmode="numeric" maxlength="6"></div></div><div id="pe" class="er"></div><p><button class="btn p" onclick="pub()">Publish new version</button></p></div>`;
+function pub(){const o=cur(),g=id=>$('#'+id).value.trim(),e=m=>$('#pe').textContent=m;
+if(!g('why'))return e('A reason is required');if(!g('ef'))return e('Choose an effective date');if(g('pnp')!==S.user.pin)return e('PIN incorrect');
+const n={v:o.v+1,from:g('ef'),by:S.user.name,why:g('why'),caps:{},daily:{},banned:g('bn').toLowerCase().split(',').map(x=>x.trim()).filter(Boolean),win:+g('wn'),appr:+g('ap'),month:+g('mo')};
+PUR.forEach((k,i)=>n.caps[k]=+g('c'+i));Object.keys(o.daily).forEach((k,i)=>n.daily[k]=+g('d'+i));
+if([...Object.values(n.caps),...Object.values(n.daily),n.win,n.appr,n.month].some(x=>!(x>=0)))return e('Enter valid numbers');
+const ch=[],df=(s,k,a,b)=>{if(a!==b)ch.push({s,t:k+': '+a+' → '+b})};
+PUR.forEach(k=>df('Category caps',k,o.caps[k],n.caps[k]));Object.keys(o.daily).forEach(k=>df('Daily limits',k,o.daily[k],n.daily[k]));
+df('Other rules','Filing window',o.win,n.win);df('Other rules','Sign-off threshold',o.appr,n.appr);df('Other rules','Monthly limit',o.month,n.month);df('Non-reimbursable items','List',o.banned.join(', '),n.banned.join(', '));
+if(!ch.length)return e('No changes to publish');P.push(n);P.sort((a,b)=>a.from<b.from?-1:1);
+ch.forEach(c=>HIST.push({v:n.v,at:ago(0),by:S.user.name,sec:c.s,why:n.why,chg:c.t}));S.sub='c';draw()}
+const hist=()=>`<div class="sc"><table class="tb"><tr><th>Version<th>Section<th>What changed<th>Why<th>Who<th>When${HIST.slice().reverse().map(h=>`<tr><td>v${h.v}<td>${H(h.sec)}<td>${H(h.chg)}<td>${H(h.why)}<td>${H(h.by)}<td>${h.at}`).join('')}</table></div>`;
+function pol(){const c=cur(),ed=S.user.edit;let b;
+if(S.sub==='a')b=`<div class="card"><h3>Policy v${c.v}</h3><p class="mu">Effective from ${c.from}. Set by ${H(c.by)}: ${H(c.why)}</p><div class="g2"><div><b>Category caps per receipt</b>${Object.entries(c.caps).map(([k,v])=>kv(k,inr(v))).join('')}</div><div><b>Daily limits by city</b>${Object.entries(c.daily).map(([k,v])=>kv(k,inr(v))).join('')}<p><b>Other rules</b></p>${kv('Filing window',c.win+' days')}${kv('Manager sign-off above',inr(c.appr))}${kv('Monthly limit',inr(c.month))}${kv('Not reimbursable',H(c.banned.join(', ')))}</div></div><p class="mu sm">Client meals also need the client’s name, designation and organisation.</p></div>`;
+else b=(S.sub==='b'&&ed)?editor(c):hist();
+return tabs(ed?['Policy view','Policy editor','Change history']:['Policy view','Change history'],'sub')+b}
+function rev(){let b;if(S.tab==='a'){const nc=R.filter(r=>r.status!=='approved').reverse(),c=R.filter(r=>r.status==='approved').reverse();
+b=tabs(['Compliant ('+c.length+')','Non-compliant ('+nc.length+')'],'sub')+(S.sub==='a'?tbl(c,'v'):nc.map(card).join('')||'<p class="mu">Nothing to review.</p>')}
+else b=S.tab==='b'?flg():pol();
+return `<div class="wrap">${tabs(['Receipts received','Flagged employees','Policies'],'tab',"S.sub='a';")}${b}</div>`}
+function draw(){const a=$('#app'),t=$('#tp');
+if(!S.user){t.innerHTML='';document.body.className=S.stage==='login'?S.role:'';a.innerHTML=S.stage==='land'?land():login();return}
+document.body.className=S.user.role;
+t.innerHTML=`<span class="mu">${H(S.user.name)}, ${S.user.role==='emp'?'Employee':'Finance reviewer'}</span> <button class="btn" onclick="out()">Log out</button>`;
+a.innerHTML=S.user.role==='emp'?emp():rev();const c=$('#cls');if(c)c.innerHTML=clRow()}
+draw();
+</script></body></html>

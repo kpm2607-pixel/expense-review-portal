@@ -1,0 +1,136 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Expense review portal</title>
+<style>
+:root{--bg:#f4f6f7;--card:#fff;--tx:#1d2125;--mu:#5f6870;--bd:#d9dee2;--tl:#0f6e56;--pu:#534ab7;--bt:#fff;--rd:#a32d2d;--rdb:#fcebeb;--am:#854f0b;--amb:#faeeda;--gn:#3b6d11;--gnb:#eaf3de;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+@media(prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#16191b;--card:#21262a;--tx:#eceff1;--mu:#a1a9b0;--bd:#3a4249;--tl:#5dcaa5;--pu:#afa9ec;--bt:#10120f;--rd:#f09595;--rdb:#501313;--am:#fac775;--amb:#412402;--gn:#97c459;--gnb:#173404}}
+:root[data-theme="dark"]{--bg:#16191b;--card:#21262a;--tx:#eceff1;--mu:#a1a9b0;--bd:#3a4249;--tl:#5dcaa5;--pu:#afa9ec;--bt:#10120f;--rd:#f09595;--rdb:#501313;--am:#fac775;--amb:#412402;--gn:#97c459;--gnb:#173404}
+html{scroll-padding-top:env(safe-area-inset-top,0px)}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--tx);font:15px/1.5 system-ui,-apple-system,"Segoe UI",sans-serif}
+.wrap{max-width:880px;margin:0 auto;padding:16px}
+h1{font-size:22px;font-weight:500;margin:6px 0}h2{font-size:17px;font-weight:500;margin:0 0 8px}
+.card{background:var(--card);border:1px solid var(--bd);border-radius:12px;padding:16px;margin:0 0 12px}
+.g2{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:12px}
+.pk{border-top:4px solid var(--c)}
+label{display:block;font-size:13px;color:var(--mu);margin:10px 0 3px}
+input,select{width:100%;padding:8px;border:1px solid var(--bd);border-radius:8px;background:var(--bg);color:var(--tx);font:inherit}
+.row{display:grid;grid-template-columns:1fr 1fr;gap:8px}.row3{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-top:6px}
+button{background:var(--ac,var(--tl));color:var(--bt);border:0;border-radius:8px;padding:8px 14px;font:inherit;cursor:pointer;margin:10px 6px 0 0}
+button.ghost{background:none;color:var(--tx);border:1px solid var(--bd)}
+.tabs{display:flex;gap:6px;flex-wrap:wrap;margin:10px 0}.tabs button{background:none;color:var(--tx);border:1px solid var(--bd);margin:0}.tabs button.on{background:var(--ac);color:var(--bt);border-color:var(--ac)}
+.chip{display:inline-flex;align-items:center;gap:5px;margin:2px 10px 2px 0;color:var(--tx);font-size:14px}.chip input{width:auto}
+.t{display:inline-block;font-size:12px;padding:2px 9px;border-radius:99px;margin:4px 6px 0 0}
+.approved,.partial{background:var(--gnb);color:var(--gn)}.review,.info{background:var(--amb);color:var(--am)}.rejected{background:var(--rdb);color:var(--rd)}
+.item{border-top:1px solid var(--bd);padding:10px 0}.item:first-of-type{border-top:0}
+.mu{color:var(--mu)}.note{padding:8px 12px;border-radius:8px;margin:8px 0;background:var(--amb);color:var(--am)}.note.bad{background:var(--rdb);color:var(--rd)}.note.good{background:var(--gnb);color:var(--gn)}
+table{width:100%;border-collapse:collapse}td{padding:6px 4px;border-top:1px solid var(--bd)}td+td{text-align:right}
+.top{display:flex;justify-content:space-between;align-items:center;gap:8px;flex-wrap:wrap}.sm{font-size:13px}
+</style></head><body><div id="app"></div>
+<script>
+const RATE={INR:1,USD:83,EUR:90,GBP:105,AED:22.6},P=['Client meal','Office meal','Travel','Supplies','Phone/internet','Fuel','Other'],ST={approved:'Approved',review:'Under review',info:'Needs info',rejected:'Rejected',partial:'Partly paid'};
+const ago=n=>new Date(Date.now()-n*864e5).toISOString().slice(0,10),today=()=>ago(0),fmt=n=>'₹'+Math.round(n).toLocaleString('en-IN');
+const esc=s=>String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+const USERS=[{id:'E101',name:'Rahul S.',role:'employee',pin:'111111'},{id:'E102',name:'Neha K.',role:'employee',pin:'222222'},{id:'E103',name:'Amit P.',role:'employee',pin:'333333'},{id:'R201',name:'Anita M.',role:'reviewer',pin:'999999',edit:1}];
+const POL=[{v:1,from:'2026-01-01',by:'Anita M.',at:'1 Jan 2026',why:'Initial policy',chg:['Policy created'],caps:{'Client meal':2500,'Office meal':500,Travel:8000,Supplies:5000,'Phone/internet':2000,Fuel:3000,Other:1000},monthly:25000,threshold:10000,window:30,banned:['alcohol','beer','wine','whisky','cigarette']}];
+let R=[],AU=[],N=0,S={fails:{},lock:{},dis:{}};
+const U=id=>USERS.find(u=>u.id===id),pol=d=>POL.filter(p=>p.from<=d).sort((a,b)=>b.v-a.v)[0]||POL[0],$=s=>document.querySelector(s);
+const log=(a,d)=>AU.unshift({t:new Date().toLocaleString('en-IN'),by:S.user?S.user.name:'system',a,d:d||''});
+function decide(r){const p=pol(r.date),I=[],a=(s,t,m)=>I.push({s,t,m}),age=(Date.now()-new Date(r.date))/864e5,cap=p.caps[r.purpose],c=r.clients[0];
+ if(age<-1)a(3,'Rule violation','Date is in the future');
+ if(age>p.window)a(2,'Rule violation',`Older than the ${p.window}-day filing window`);
+ if(r.messy)a(1,'Messy','Receipt image is unreadable, please retake it');
+ if(r.purpose==='Client meal'&&!(c&&c.n&&c.d&&c.o))a(1,'Missing info','Client name, designation and organisation are required');
+ const b=p.banned.filter(w=>r.items.toLowerCase().includes(w));
+ if(b.length)a(2,'Rule violation','Non-reimbursable item: '+b.join(', '));
+ if(r.inr>cap)a(2,'Rule violation',`Over the ${r.purpose} cap of ${fmt(cap)} by ${fmt(r.inr-cap)}`);
+ if(R.some(x=>x.uid===r.uid&&x.date===r.date&&x.place.toLowerCase()===r.place.toLowerCase()&&x.cur===r.cur&&x.amt===r.amt))a(2,'Duplicate','Same place, date and amount already submitted');
+ const m=R.filter(x=>x.uid===r.uid&&x.status!=='rejected'&&Math.abs(new Date(x.date)-new Date(r.date))<=30*864e5).reduce((s,x)=>s+x.inr,0)+r.inr;
+ if(m>p.monthly)a(2,'Rule violation',`Monthly limit of ${fmt(p.monthly)} exceeded (${fmt(m)})`);
+ if(r.inr>p.threshold)a(2,'Rule violation',`Above ${fmt(p.threshold)}, needs manager sign-off`);
+ const mx=Math.max(0,...I.map(i=>i.s));
+ return{status:mx===0?'approved':mx===3?'rejected':mx===2?'review':'info',tag:mx?I.find(i=>i.s===mx).t:'Compliant',reason:I.map(i=>i.m).join('. ')}}
+function add(r){const d=decide(r);Object.assign(r,d,{id:++N,pv:pol(r.date).v,paid:d.status==='approved'?r.inr:0});R.push(r);log('Receipt submitted',`${r.purpose}, ${fmt(r.inr)}: ${d.status}`);return r}
+const mk=(uid,purpose,place,n,amt,items,o={})=>add({uid,purpose,place,date:ago(n),time:'13:00',cur:'INR',amt,inr:amt,items,notes:'',messy:0,with:[],clients:[],...o});
+const cl=[{n:'Rohan Mehta',d:'Procurement Manager',o:'Tata Projects'}];
+mk('E101','Client meal','Taj Restaurant, Mumbai',3,2200,'Dinner for four',{clients:cl});
+mk('E101','Client meal','Hotel Sea Rock, Mumbai',2,4200,'Dinner, whisky',{clients:cl});
+mk('E102','Office meal','Office cafeteria, Pune',5,450,'Lunch');
+mk('E102','Supplies','Stationery Hub, Pune',4,900,'Notebooks',{messy:1});
+mk('E102','Fuel','HP Pump, Pune',3,1200,'Petrol',{messy:1});
+mk('E102','Travel','Cab, Pune',1,1500,'Cab fare',{messy:1});
+mk('E103','Travel','Rail booking, Delhi',6,7900,'Train tickets');
+mk('E103','Travel','Cab, Delhi',5,7800,'Cab fare');
+mk('E103','Travel','Hotel, Delhi',4,7950,'Stay');
+mk('E103','Supplies','Print shop, Delhi',2,4900,'Printing');
+AU=[];
+const tabs=(a,cur,fn)=>`<div class=tabs>${a.map(([k,l])=>`<button class="${k===cur?'on':''}" onclick="${fn}('${k}')">${l}</button>`).join('')}</div>`;
+const hdr=u=>`<div class=top><div><h1>${u.role==='employee'?'Employee panel':'Finance reviewer panel'}</h1><span class=mu>${esc(u.name)} · ${u.id}</span></div><button class=ghost onclick="out()">Log out</button></div>`;
+const landV=()=>`<div class=wrap><h1>Expense review portal</h1><p class=mu>Submit receipts, review claims and manage the policy. Choose your role to continue.</p><div class=g2>
+<div class="card pk" style="--c:var(--tl)"><h2>Employee</h2><p class=mu>Submit receipts and track what has been paid.</p><button style="--ac:var(--tl)" onclick="pick('employee')">Continue as employee</button></div>
+<div class="card pk" style="--c:var(--pu)"><h2>Finance reviewer</h2><p class=mu>Review flagged receipts, watch limits and manage the policy.</p><button style="--ac:var(--pu)" onclick="pick('reviewer')">Continue as reviewer</button></div></div></div>`;
+const loginV=()=>`<div class=wrap style="--ac:${S.pick==='employee'?'var(--tl)':'var(--pu)'}"><div class=card style="max-width:380px;margin:30px auto"><h2>${S.pick==='employee'?'Employee':'Finance reviewer'} login</h2>${S.err?`<div class="note bad">${S.err}</div>`:''}<label>ID</label><input id=id autocomplete=off><label>PIN</label><input id=pin type=password inputmode=numeric maxlength=6><button onclick="login()">Enter</button><button class=ghost onclick="pick(null)">Change role</button><p class="mu sm">Demo logins: E101 / 111111, E102 / 222222, E103 / 333333 (employees), R201 / 999999 (reviewer).</p></div></div>`;
+const crow=()=>`<div class=row3 data-c><input placeholder="Client name"><input placeholder="Designation"><input placeholder="Organisation"></div>`;
+const eForm=u=>`<div class=card><h2>Submit a receipt</h2><div id=msg></div>
+<label>Receipt image (JPG, JPEG or PNG)</label><input type=file id=f accept=".jpg,.jpeg,.png,image/jpeg,image/png">
+<label>Purpose</label><select id=pu>${P.map(p=>`<option>${p}</option>`).join('')}</select>
+<label>People with me</label><div>${USERS.filter(x=>x.role==='employee'&&x.id!==u.id).map(x=>`<label class=chip><input type=checkbox class=w value=${x.id}>${x.name}</label>`).join('')}</div>
+<label>Client details (required for client meals)</label><div id=cs>${crow()}</div><button type=button class=ghost onclick="$('#cs').insertAdjacentHTML('beforeend',crow())">Add another client</button>
+<label>Place where the money was spent</label><input id=pl>
+<div class=row><div><label>Date</label><input type=date id=dt value="${today()}"></div><div><label>Time</label><input type=time id=tm value="${new Date().toTimeString().slice(0,5)}"></div></div>
+<div class=row><div><label>Currency</label><select id=cu onchange=hint()>${Object.keys(RATE).map(c=>`<option>${c}</option>`).join('')}</select></div><div><label>Amount</label><input type=number id=am min=0 oninput=hint()></div></div><div class="mu sm" id=hn></div>
+<label>Items on the bill (the live system reads these from the image)</label><input id=it placeholder="For example: dinner, soft drinks">
+<label>Notes</label><input id=nt>
+<label class=chip style="margin-top:12px"><input type=checkbox id=ms>Simulate a blurry or cropped photo</label><br>
+<button onclick="sub()">Submit receipt</button></div>`;
+function hint(){const a=+$('#am').value,c=$('#cu').value;$('#hn').textContent=a>0&&c!=='INR'?`About ${fmt(a*RATE[c])} at the sample rate`:''}
+function sub(){const f=$('#f').files[0],v=i=>$('#'+i).value.trim(),err=t=>$('#msg').innerHTML=`<div class="note bad">${t}</div>`;
+ if(!f)return err('Attach a receipt image.');
+ if(!['image/jpeg','image/png'].includes(f.type))return err('Only JPG, JPEG or PNG files are accepted.');
+ if(!v('pl')||!v('dt')||!v('tm')||!(+v('am')>0))return err('Place, date, time and amount are required.');
+ const cu=v('cu'),amt=+v('am'),r=add({uid:S.user.id,purpose:v('pu'),place:v('pl'),date:v('dt'),time:v('tm'),cur:cu,amt,inr:Math.round(amt*RATE[cu]),items:v('it'),notes:v('nt'),messy:$('#ms').checked,with:[...document.querySelectorAll('.w:checked')].map(x=>x.value),clients:[...document.querySelectorAll('[data-c]')].map(d=>{const i=d.querySelectorAll('input');return{n:i[0].value.trim(),d:i[1].value.trim(),o:i[2].value.trim()}}).filter(c=>c.n||c.d||c.o)});
+ S.tab='st';S.flash=`Decision: ${ST[r.status]}. ${r.reason||'All checks passed.'}`;S.fc=r.status==='approved'?'good':'';render()}
+const item=(r,e)=>`<div class=item><b>${r.purpose}</b> · ${esc(r.place)}<div class=mu>${r.date} ${r.time} · ${r.cur} ${r.amt} = ${fmt(r.inr)}${r.paid?' · paid '+fmt(r.paid):''}</div><span class="t ${r.status}">${ST[r.status]}</span><span class="t ${r.status}">${r.tag}</span>${r.reason?`<div>${esc(r.reason)}</div>`:''}${e&&(r.status==='info'||r.status==='rejected')?`<button class=ghost onclick="disp(${r.id})">Dispute</button>`:''}</div>`;
+function eStat(u){const m=R.filter(r=>r.uid===u.id).sort((a,b)=>b.date.localeCompare(a.date)),ok=m.filter(r=>r.status==='approved'||r.status==='partial'),no=m.filter(r=>!ok.includes(r)),used=m.filter(r=>r.status!=='rejected'&&(Date.now()-new Date(r.date))/864e5<=30).reduce((s,r)=>s+r.inr,0);
+ return`<div class=card>Last 30 days: <b>${fmt(used)}</b> of ${fmt(pol(today()).monthly)} limit</div><div class=g2><div class=card><h2>Claimed</h2>${ok.map(r=>item(r,1)).join('')||'<span class=mu>Nothing claimed yet.</span>'}</div><div class=card><h2>Unclaimed</h2>${no.map(r=>item(r,1)).join('')||'<span class=mu>Nothing waiting.</span>'}</div></div>`}
+const rItem=r=>`<div class=item><b>${U(r.uid).name}</b> · ${r.purpose} · ${esc(r.place)}<div class=mu>${r.date} · ${r.cur} ${r.amt} = ${fmt(r.inr)} · policy v${r.pv}${r.with.length?' · with '+r.with.map(i=>U(i).name).join(', '):''}${r.clients[0]?' · client '+esc([r.clients[0].n,r.clients[0].d,r.clients[0].o].join(', ')):''}</div><span class="t ${r.status}">${ST[r.status]}</span><span class="t ${r.status}">${r.tag}</span>${r.reason?`<div>${esc(r.reason)}</div>`:''}${r.status==='review'||r.status==='info'?`<div><button onclick="act(${r.id},'ok')">Approve</button><button class=ghost onclick="act(${r.id},'cap')">Pay up to cap</button><button class=ghost onclick="act(${r.id},'no')">Reject</button><button class=ghost onclick="act(${r.id},'info')">Ask for info</button></div>`:''}</div>`;
+function rcv(){const ok=R.filter(r=>r.status==='approved'||r.status==='partial'),no=R.filter(r=>!ok.includes(r)),l=(S.sub==='no'?no:ok).slice().reverse();
+ return tabs([['ok',`Compliant (${ok.length})`],['no',`Non-compliant (${no.length})`]],S.sub,'sb')+(S.sub==='no'?`<div class=card><h2>Confirm a decision</h2><p class="mu sm">Approving, rejecting or asking for info needs a reason and your PIN.</p>${S.er?`<div class="note bad">${S.er}</div>`:''}<div class=row><div><label>Reason</label><input id=rs value="${esc(S.rs||'')}"></div><div><label>PIN</label><input id=rp type=password inputmode=numeric maxlength=6></div></div></div>`:'')+`<div class=card>${l.map(rItem).join('')||'<span class=mu>Nothing here.</span>'}</div>`}
+function act(id,k){const r=R.find(x=>x.id===id),u=S.user;S.rs=$('#rs').value.trim();
+ if(!S.rs||$('#rp').value!==u.pin){S.er='Enter a reason and re-enter your PIN to confirm.';return render()}
+ const cap=pol(r.date).caps[r.purpose];
+ if(k==='ok'){r.status='approved';r.paid=r.inr}if(k==='cap'){r.status='partial';r.paid=Math.min(r.inr,cap)}if(k==='no'){r.status='rejected';r.paid=0}if(k==='info')r.status='info';
+ r.tag=({ok:'Cleared',cap:'Capped',no:'Rejected',info:'Needs info'})[k];r.reason=`${S.rs} (by ${u.name})`;
+ log('Decision: '+k,`${U(r.uid).name}, ${r.purpose}, ${fmt(r.inr)}. Reason: ${S.rs}`);S.rs='';S.er='';S.flash='Decision recorded.';S.fc='good';render()}
+function flags(){const p=pol(today());return USERS.filter(u=>u.role==='employee'&&!S.dis[u.id]).map(u=>{const m=R.filter(r=>r.uid===u.id),w=[],bad=m.filter(r=>r.status!=='approved'&&r.status!=='partial'),mo=m.filter(r=>r.status!=='rejected'&&(Date.now()-new Date(r.date))/864e5<=30).reduce((s,r)=>s+r.inr,0),nu=m.filter(r=>r.inr<=pol(r.date).caps[r.purpose]&&r.inr>=.9*pol(r.date).caps[r.purpose]);
+ if(bad.length>=3)w.push(`${bad.length} receipts with problems`);if(mo>p.monthly)w.push('Over the monthly limit');if(nu.length>=3)w.push(`${nu.length} claims just under a cap`);return{u,w,mo}}).filter(x=>x.w.length)}
+const fl=()=>flags().map(x=>`<div class=card><h2>${x.u.name}</h2><div class=mu>${fmt(x.mo)} of ${fmt(pol(today()).monthly)} in the last 30 days</div>${x.w.map(w=>`<span class="t review">${w}</span>`).join('')}<div><button onclick="rem('${x.u.id}')">Send reminder</button><button class=ghost onclick="dis('${x.u.id}')">Dismiss flag</button></div></div>`).join('')||'<div class=card><span class=mu>No employees are flagged.</span></div>';
+function po(u){const p=POL[POL.length-1],a=pol(today());return tabs([['v','Policy view'],['e','Edit policy'],['h','Change history']],S.sub,'sb')+(S.sub==='h'?POL.slice().reverse().map(x=>`<div class=card><b>Version ${x.v}</b> · effective ${x.from}<div class=mu>${esc(x.by)} · ${x.at}</div><div>Why: ${esc(x.why)}</div><ul>${x.chg.map(c=>`<li>${esc(c)}</li>`).join('')}</ul></div>`).join(''):S.sub==='e'?ed(u,p):`<div class=card><h2>Current policy, version ${a.v}</h2><div class="mu sm">Effective from ${a.from}</div><table>${P.map(k=>`<tr><td>${k}: cap per receipt</td><td>${fmt(a.caps[k])}</td></tr>`).join('')}<tr><td>Limit per employee, 30 days</td><td>${fmt(a.monthly)}</td></tr><tr><td>Manager sign-off above</td><td>${fmt(a.threshold)}</td></tr><tr><td>Filing window</td><td>${a.window} days</td></tr><tr><td>Not reimbursable</td><td>${a.banned.join(', ')}</td></tr><tr><td>Client meals need</td><td>Name, designation, organisation</td></tr></table></div>`)}
+const ed=(u,p)=>!u.edit?'<div class=card>You do not have permission to edit the policy.</div>':`<div class=card><h2>Edit policy</h2><p class="mu sm">Publishing creates a new version. Receipts are judged by the version in force on the expense date.</p>${S.er?`<div class="note bad">${S.er}</div>`:''}<div class=row>${P.map((k,i)=>`<div><label>${k} cap</label><input type=number id=k${i} value=${p.caps[k]}></div>`).join('')}<div><label>Limit per employee, 30 days</label><input type=number id=mo value=${p.monthly}></div><div><label>Sign-off above</label><input type=number id=th value=${p.threshold}></div><div><label>Filing window (days)</label><input type=number id=wi value=${p.window}></div><div><label>Effective from</label><input type=date id=ef value="${S.ef||today()}"></div></div><label>Not reimbursable (comma separated)</label><input id=bn value="${esc(p.banned.join(', '))}"><div class=row><div><label>Reason for the change</label><input id=rs2 value="${esc(S.rs2||'')}"></div><div><label>PIN</label><input id=pn2 type=password inputmode=numeric maxlength=6></div></div><button onclick="pub()">Publish new version</button></div>`;
+function pub(){const u=S.user,p=POL[POL.length-1],g=i=>$('#'+i).value.trim(),n=JSON.parse(JSON.stringify(p)),c=[];
+ P.forEach((k,i)=>{const v=+g('k'+i);if(v!==p.caps[k]){c.push(`${k} cap: ${fmt(p.caps[k])} to ${fmt(v)}`);n.caps[k]=v}});
+ [['mo','monthly','Limit per employee'],['th','threshold','Sign-off threshold'],['wi','window','Filing window (days)']].forEach(([i,k,l])=>{const v=+g(i);if(v!==p[k]){c.push(`${l}: ${p[k]} to ${v}`);n[k]=v}});
+ const bn=g('bn').split(',').map(s=>s.trim().toLowerCase()).filter(Boolean);if(bn.join()!==p.banned.join()){c.push(`Not reimbursable: ${p.banned.join(', ')} to ${bn.join(', ')}`);n.banned=bn}
+ S.rs2=g('rs2');S.ef=g('ef');
+ if(!c.length)S.er='There are no changes to publish.';else if(!S.rs2)S.er='A reason is required.';else if($('#pn2').value!==u.pin)S.er='PIN incorrect.';
+ else{Object.assign(n,{v:p.v+1,from:S.ef||today(),by:u.name,at:new Date().toLocaleDateString('en-IN'),why:S.rs2,chg:c});POL.push(n);log('Policy edited',`v${n.v}: ${c.join('; ')}`);S.er='';S.rs2='';S.flash=`Version ${n.v} published.`;S.fc='good';S.sub='h'}
+ render()}
+const au=()=>`<div class=card><h2>Audit log</h2>${AU.slice(0,40).map(a=>`<div class=item><span class=mu>${a.t}</span> · <b>${esc(a.by)}</b> · ${esc(a.a)}<div class="mu sm">${esc(a.d)}</div></div>`).join('')||'<span class=mu>No activity yet.</span>'}</div>`;
+function render(){const u=S.user,a=$('#app');
+ if(!u){a.innerHTML=S.pick?loginV():landV();return}
+ const e=u.role==='employee',t=S.tab;
+ a.innerHTML=`<div class=wrap style="--ac:${e?'var(--tl)':'var(--pu)'}">${hdr(u)}${tabs(e?[['rec','Receipts'],['st','Status']]:[['rcv','Receipts received'],['fl','Flagged employees'],['po','Policies'],['au','Audit log']],t,'go')}${S.flash?`<div class="note ${S.fc||''}">${esc(S.flash)}</div>`:''}${e?(t==='rec'?eForm(u):eStat(u)):t==='rcv'?rcv():t==='fl'?fl():t==='po'?po(u):au()}</div>`}
+function pick(r){S.pick=r;S.err='';render()}
+function login(){const id=$('#id').value.trim().toUpperCase(),pin=$('#pin').value,now=Date.now(),u=U(id);
+ if((S.lock[id]||0)>now){S.err='Too many attempts. Try again in a minute.';return render()}
+ if(!u||u.pin!==pin||u.role!==S.pick){S.fails[id]=(S.fails[id]||0)+1;if(S.fails[id]>=5){S.lock[id]=now+6e4;S.fails[id]=0}S.err='ID or PIN incorrect.';return render()}
+ S.fails[id]=0;S.user=u;S.err='';S.tab=u.role==='employee'?'rec':'rcv';S.sub='ok';S.flash='';log('Login','');render()}
+function out(){S.user=null;S.pick=null;S.flash='';render()}
+function go(k){S.tab=k;S.sub=k==='rcv'?'ok':'v';S.flash='';S.er='';render()}
+function sb(k){S.sub=k;S.er='';render()}
+function disp(id){const r=R.find(x=>x.id===id);r.status='review';r.tag='Disputed';r.reason=(r.reason?r.reason+'. ':'')+'Employee disputed this decision';log('Dispute',`${r.purpose}, ${fmt(r.inr)}`);S.flash='Sent back to the reviewer.';S.fc='good';render()}
+function rem(id){log('Reminder sent',U(id).name);S.flash=`Reminder sent to ${U(id).name}.`;S.fc='good';render()}
+function dis(id){S.dis[id]=1;log('Flag dismissed',U(id).name);render()}
+document.addEventListener('keydown',e=>{if(e.key==='Enter'&&e.target.id==='pin')login()});
+render();
+</script></body></html>
